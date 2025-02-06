@@ -1,0 +1,4 @@
+*.txt
+*.out
+*.ex
+tmp_build_dir/
