@@ -181,7 +181,10 @@ bcnormal(
         amrex::Real wall_len = max_xval/(num_inlet*5);
         amrex::Real x_val = x[0];
         amrex::Real eint;
-         if ((fmod(x_val, wall_len*5) > wall_len*2) && x_val > 0) {
+        if (x_val<0) {
+          x_val = max_xval + x_val;
+        }
+         if ((fmod(abs(x_val), wall_len*5) > wall_len*2)) {
           auto eos = pele::physics::PhysicsType::eos();
           amrex::Real p_int;
           amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
@@ -209,7 +212,7 @@ bcnormal(
           eos.TY2Cv(s_int[UTEMP],massfrac_int,Cv);
           gamma = Cp/Cv;
 
-          p_cr = inj_p0*pow(2/(gamma+1),(gamma-1)/gamma);
+          p_cr = inj_p0*pow(2/(gamma+1),(gamma)/(gamma-1));
           // no injection
           if (p_int >= inj_p0) {
              p_ext = p_int;
@@ -228,7 +231,7 @@ bcnormal(
               massfrac_ext[O2_ID] = 0.88809;
               massfrac_ext[H2_ID] = 0.1119;
               //eos.PYT2RE(prob_parm.reac_pres, massfrac_ext, s_ext[UTEMP], rho, eint);
-              eos.PYT2RE(prob_parm.reac_pres, massfrac_ext, s_ext[UTEMP], rho, eint);
+              eos.PYT2RE(p_ext, massfrac_ext, s_ext[UTEMP], rho, eint);
               for (int n = 0; n < NUM_SPECIES; n++) {
                 s_ext[UFS + n] = rho * massfrac_ext[n];
               }
@@ -245,18 +248,16 @@ bcnormal(
               s_ext[UTEMP] = inj_t0 * (2/(gamma+1));
               massfrac_ext[O2_ID] = 0.88809;
               massfrac_ext[H2_ID] = 0.1119;
-              eos.PYT2RE(prob_parm.reac_pres, massfrac_ext, s_ext[UTEMP], rho, eint);
+              eos.PYT2RE(p_ext, massfrac_ext, s_ext[UTEMP], rho, eint);
               for (int n = 0; n < NUM_SPECIES; n++) {
                 s_ext[UFS + n] = rho * massfrac_ext[n];
               }
-              vy_in = sqrt(((2*gamma)/(gamma-1))*R*inj_t0);
+              vy_in = sqrt(((2*gamma)/(gamma+1))*R*inj_t0);
               s_ext[UMX] = rho * vx_in;
               s_ext[UMY] = rho * vy_in; 
               s_ext[UMZ] = rho * vz_in;
               s_ext[UEINT] = rho * eint;
-              //s_ext[UEDEN] = s_ext[UEINT] + 0.5 * rho * (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in);
-              s_ext[UEDEN] = s_ext[UEINT] + 0.5 * s_ext[UMY] * s_ext[UMY] / rho;
-            
+              s_ext[UEDEN] = s_ext[UEINT] + 0.5 * rho * (vx_in * vx_in + vy_in * vy_in + vz_in * vz_in);
            }
         }
        }
