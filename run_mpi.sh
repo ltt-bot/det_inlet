@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --job-name=det_out_ign   # create a short name for your job
+#SBATCH --job-name=det_out_inl   # create a short name for your job
 #SBATCH --nodes=2                # node count
 #SBATCH --ntasks=224             # total number of tasks across all nodes
 #SBATCH --cpus-per-task=1        # cpu-cores per task (>1 if multi-threaded tasks)
-#SBATCH --time=01:00:00          # total run time limit (HH:MM:SS)
+#SBATCH --time=03:00:00          # total run time limit (HH:MM:SS)
 #SBATCH --mail-user=ltt@princeton.edu
 #SBATCH --mail-type=end          # send email when job ends
 #SBATCH --account=mueller

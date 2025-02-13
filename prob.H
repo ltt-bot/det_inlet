@@ -80,16 +80,16 @@ pc_initdata(
 
     // Overwrite if in ignition region 
     if (xval <= 0.09375 && yval <= 1.5) {
-        // Burned 
-        massfrac[N2_ID] = 0.0;  // no nitrogen
-        massfrac[H_ID] = 0.00556;
-        massfrac[O2_ID] = 0.10329; 
-        massfrac[O_ID] =  0.04124;
-        massfrac[OH_ID] = 0.16588;
-        massfrac[H2_ID] = 0.02253; 
-        massfrac[H2O_ID] = 0.66105;
-        massfrac[HO2_ID] = 0.00042;
-        massfrac[H2O2_ID] = 0.00005;
+        // Burned / just water / now H2 mixture
+        massfrac[N2_ID] = 0.0;
+        massfrac[H_ID] = 0.0;
+        massfrac[O2_ID] = 0.0;
+        massfrac[O_ID] = 0.0;
+        massfrac[OH_ID] = 0.0;
+        massfrac[H2_ID] = 0.0;
+        massfrac[H2O_ID] = 1.0;
+        massfrac[HO2_ID] =  0.0;
+        massfrac[H2O2_ID] = 0.0;
         amrex::Real sum = 0.0;
         for (int n = 0; n < NUM_SPECIES; n++) {
           sum+= massfrac[n];
@@ -100,6 +100,7 @@ pc_initdata(
         // temperature = 3676.76;
         // pressure = 1899976.032354744e1; // multiply by ten if in Pa (units?)
         velocity[0] = 2836.19e2; // before 2327.5e2 (units in cm/s?) might need to change this
+        //velocity[0] = 0;
         temperature = 2500;
         pressure = 4.053e7; // multiply by ten if in Pa (units?)
         eos.PYT2R(pressure, massfrac, temperature, rho);
@@ -160,7 +161,7 @@ bcnormal(
   const int idir,
   const int sgn,
   const amrex::Real time,
-  amrex::GeometryData const& /*geomdata*/,
+  amrex::GeometryData const& geomdata,
   ProbParmDevice const& prob_parm,
   const amrex::GpuArray<amrex::Real, AMREX_SPACEDIM>& /*turb_fluc*/)
 {
@@ -176,14 +177,15 @@ bcnormal(
         //check at an inlet
         amrex::Real num_inlet = prob_parm.num_inlet;
         // Find location in domain
-        // amrex::Real max_xval = geomdata.ProbHi(0);
-        amrex::Real max_xval = 16.;
+        amrex::Real max_xval = geomdata.ProbHi(0);
+        //amrex::Real wall_len = max_xval/(num_inlet*5 + 2);
         amrex::Real wall_len = max_xval/(num_inlet*5);
         amrex::Real x_val = x[0];
         amrex::Real eint;
-        if (x_val<0) {
-          x_val = max_xval + x_val;
-        }
+        // this is kinda like skipping a time step I think actually - better to just let it default to wall
+        // if (x_val<0) {
+        //   x_val = max_xval + x_val;
+        // }
          if ((fmod(abs(x_val), wall_len*5) > wall_len*2)) {
           auto eos = pele::physics::PhysicsType::eos();
           amrex::Real p_int;
@@ -264,66 +266,70 @@ bcnormal(
      }
   }
 
-  // output boundary condition
-//   // get rid of this since I wanted to make sure this was on
-//  if (idir == 1) {
-//   // at y high boundary
-//     if ( sgn== -1) {
-//       auto eos = pele::physics::PhysicsType::eos();
-//       amrex::Real p_int;
-//       amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
-//       amrex::Real massfrac_ext[NUM_SPECIES] = {0.0};
-//       amrex::Real gamma = 1.4;
-//       // we assume pressure on the outer boundary is equal to the reactant pressure (1 atm)
-//       amrex::Real p_ext = prob_parm.reac_pres;
-//       // initialize mass fractions
-//       for (int n = 0; n < NUM_SPECIES; n++) {
-//         massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
-//       }
-      
-//       // calculate pressure on the inside from known values
-//       eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
-//       // massfrac_ext[NUM_SPECIES] = massfrac_int[NUM_SPECIES];
-//       for (int n = 0; n < NUM_SPECIES; n++) {
-//         massfrac_ext[n] = massfrac_int[n];
-//       }
-      
-//       // calculate stagnation speed of sound, density, and temperature
-//       amrex::Real c0;
-//       amrex::Real R = p_int/(s_int[URHO]*s_int[UTEMP]); // probably can get this in input but idk how (gas constant)
-//       amrex::Real vel =  sqrt(s_int[UEDEN]/(0.5 * s_int[URHO])); // find the overall velocity
-//       amrex::Real T0 = s_int[UTEMP]*(1 + (vel*vel) / (2*s_int[UTEMP]*((gamma*R)/(gamma-1)))); 
-//       amrex::Real rho0 = s_int[URHO]* (pow((1 + ((gamma-1)/2))*pow(vel/sqrt(gamma*R*s_int[UTEMP]),2),1/(gamma-1)));
-//       c0 = sqrt(gamma*R*T0);
-//       amrex::Real rho, eint;
-//       // interpolate value for rho
-//       rho = s_int[URHO] + (p_ext - p_int)/c0;
-//       s_ext[URHO] = rho;
-//       // set mass fractions equal to inside now we have density
-//       for (int n = 0; n < NUM_SPECIES; n++) {
-//           s_ext[UFS + n] = rho * massfrac_ext[n];
-//       }
-//       // s_ext[UTEMP] = p_ext/(rho*R); <- ideal gas approx
-//       // find temperature and energy from our known values
-//       eos.RYP2T(rho, massfrac_ext, p_ext, s_ext[UTEMP]);
-//       eos.RYP2E(rho, massfrac_ext, p_ext, eint);
-//       s_ext[UEINT] = rho * eint;
+  // outlet boundary condition
+ if (idir == 1) {
+  // at y high boundary
+    if ( sgn== -1) {
+      auto eos = pele::physics::PhysicsType::eos();
+      amrex::Real p_int;
+      amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
+      amrex::Real massfrac_ext[NUM_SPECIES] = {0.0};
+      amrex::Real gamma = 1.4;
+      // we assume pressure on the outer boundary is equal to the reactant pressure (1 atm)
+      amrex::Real p_ext = prob_parm.reac_pres;
+      amrex::Real c0;
+      eos.RTY2Cs(s_int[URHO], s_int[UTEMP], massfrac_int, c0);
+      // initialize mass fractions
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
+      }
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        massfrac_ext[n] = massfrac_int[n];
+      }
+      if (s_int[UMY]/s_int[URHO] < c0) {
+        // calculate pressure on the inside from known values
+        eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
+        
+        // calculate stagnation speed of sound, density, and temperature
+        amrex::Real R = p_int/(s_int[URHO]*s_int[UTEMP]); // probably can get this in input but idk how (gas constant)
+        amrex::Real vel =  sqrt(s_int[UEDEN]/(0.5 * s_int[URHO])); // find the overall velocity
+        amrex::Real T0 = s_int[UTEMP]*(1 + (vel*vel) / (2*s_int[UTEMP]*((gamma*R)/(gamma-1)))); 
+        amrex::Real rho0 = s_int[URHO]* (pow((1 + ((gamma-1)/2))*pow(vel/sqrt(gamma*R*s_int[UTEMP]),2),1/(gamma-1)));
+        amrex::Real rho, eint;
+        // interpolate value for rho
+        rho = s_int[URHO] + (p_ext - p_int)/c0;
+        s_ext[URHO] = rho;
+        // set mass fractions equal to inside now we have density
+        for (int n = 0; n < NUM_SPECIES; n++) {
+            s_ext[UFS + n] = rho * massfrac_ext[n];
+        }
+        // find temperature and energy from our known values
+        eos.RYP2T(rho, massfrac_ext, p_ext, s_ext[UTEMP]);
+        eos.RYP2E(rho, massfrac_ext, p_ext, eint);
+        s_ext[UEINT] = rho * eint;
 
-//       // interpolate values for the velocities
-//       s_ext[UMX] = rho * (s_int[UMX]/ s_int[URHO] + sgn*(p_int - p_ext)/(rho0*c0));
-//       s_ext[UMY] = rho * (s_int[UMY]/ s_int[URHO] + (p_int - p_ext)/(rho0*c0));
-//       s_ext[UMZ] = rho * (s_int[UMZ]/ s_int[URHO] + (p_int - p_ext)/(rho0*c0));
-//       s_ext[UEDEN] =
-//       s_ext[UEINT] +
-//           0.5 * rho * ((s_ext[UMX]/rho) * (s_ext[UMX]/rho) + (s_ext[UMY]/rho) * (s_ext[UMY]/rho) + (s_ext[UMZ]/rho) * (s_ext[UMZ]/rho));
-      
-//       for (int n = 0; n < NUM_SPECIES; n++) {
-//         s_ext[UFS + n] = rho * massfrac_ext[n];
-//       }
-//      }
-//    }
-  
-
+        // interpolate values for the velocities
+        s_ext[UMX] = rho * (s_int[UMX]/ s_int[URHO] + sgn*(p_int - p_ext)/(rho0*c0));
+        s_ext[UMY] = rho * (s_int[UMY]/ s_int[URHO] + (p_int - p_ext)/(rho0*c0));
+        s_ext[UMZ] = rho * (s_int[UMZ]/ s_int[URHO] + (p_int - p_ext)/(rho0*c0));
+        s_ext[UEDEN] =
+        s_ext[UEINT] +
+            0.5 * rho * ((s_ext[UMX]/rho) * (s_ext[UMX]/rho) + (s_ext[UMY]/rho) * (s_ext[UMY]/rho) + (s_ext[UMZ]/rho) * (s_ext[UMZ]/rho));
+    }
+    else {
+      s_ext[URHO] = s_int[URHO];
+      s_ext[UEINT] = s_int[UEINT];
+      s_ext[UTEMP] = s_int[UTEMP];
+      s_ext[UMX] = s_int[UMX];;
+      s_ext[UMY] = s_int[UMY];
+      s_ext[UMZ] = s_int[UMZ];
+      s_ext[UEDEN] = s_int[UEDEN];
+      for (int n = 0; n < NUM_SPECIES; n++) {
+        s_ext[UFS + n] =  s_int[URHO] * massfrac_ext[n];
+      }
+    }
+    }
+   }
 }
 
 void pc_prob_close();

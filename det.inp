@@ -1,15 +1,15 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 # stop_time = -1        # simulation time (seconds)
 # max_step = -1         # number of coarse steps after which to stop
-max_wall_time = 1       # wall clock time (hours)
+max_wall_time = 3       # wall clock time (hours)
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0 0  # For each dir, 0: non-periodic, 1: periodic
 geometry.coord_sys   = 0  # 0 => cart, 1 => RZ  2=>spherical
 geometry.prob_lo     =  0.0      0.0     -2.0
 geometry.prob_hi     =  16.  4.   2.0
-#amr.n_cell           =  512 128 128
-amr.n_cell           =  256 64 64
+amr.n_cell           =  512 128 128
+#amr.n_cell           =  256 64 64
 #amr.n_cell           =  128 32 32
 #amr.n_cell          =  256 64 32
 #amr.n_cell          =  512 128 64
@@ -21,7 +21,7 @@ amr.n_cell           =  256 64 64
 # Interior, UserBC, Symmetry, SlipWall, NoSlipWall
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
 pelec.lo_bc       =  "Interior"  "UserBC"  "NoSlipWall"
-pelec.hi_bc       =  "Interior"  "NoSlipWall"  "NoSlipWall"
+pelec.hi_bc       =  "Interior"  "UserBC"  "NoSlipWall"
 
 # WHICH PHYSICS
 pelec.do_hydro = 1
@@ -65,13 +65,13 @@ amr.max_level       = 0       # maximum level number allowed
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
-amr.check_file      = /home/ltt/Output/Ign_Inlet/Ign_inflow_256       # root name of checkpoint file
+amr.check_file      = /home/ltt/Output/Ign_Inlet/det_out_chk      # root name of checkpoint file
 amr.check_int       = 1000        # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
-amr.plot_file       = /home/ltt/Output/Ign_Inlet/Ign_inflow_256       # root name of plotfile
-amr.plot_int        = 200        # number of timesteps between plotfiles
+amr.plot_file       = /home/ltt/Output/Ign_Inlet/det_thirty_out       # root name of plotfile
+amr.plot_int        = 400        # number of timesteps between plotfiles
 amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure eint
 pelec.plot_rhoy = 0
