@@ -17,7 +17,8 @@ struct ProbParmDevice
   amrex::Real inj_t0 = 300; 
   int inject_fuel = 1;
   amrex::Real num_inlet = 30;
-  amrex::Real inj_R = 8.31446261815324e+07/(0.88809*31.99 + 0.1119*2.016);
+  amrex::Real inj_R = 8.31446261815324e+07/(0.147*31.998 + 0.297*2.016 + 0.556*28.014);
+  amrex::Real p_outlet = 1013250.0;
 };
 
 struct ProbParmHost

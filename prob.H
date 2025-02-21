@@ -52,10 +52,10 @@ pc_initdata(
     amrex::Real yval = geomdata.ProbLo(1) + (amrex::Real(j) + 0.5) * geomdata.CellSize(1);
     // amrex::Real middle_x_val = (geomdata.ProbHi(0) - geomdata.ProbLo(0)) / 2.0;
 
-    // Default to Oxygen
-    massfrac[N2_ID] = 0.0;  // no nitrogen
+    // Default to Air
+    massfrac[N2_ID] = 0.767;  
     massfrac[H_ID] = 0.0;
-    massfrac[O2_ID] = 1.0; 
+    massfrac[O2_ID] = 0.233; 
     massfrac[O_ID] =  0.0;
     massfrac[OH_ID] = 0.0;
     massfrac[H2_ID] = 0.0; 
@@ -79,14 +79,16 @@ pc_initdata(
     eos.RTY2E(rho, temperature, massfrac, eint);
 
     // Overwrite if in ignition region 
-    if (xval <= 0.09375 && yval <= 1.5) {
-        // Burned / just water / now H2 mixture
+    if (xval <= 0.1 && yval <= 1.2) {
+        // Burned / just water
+        //massfrac[N2_ID] = 0.7451;
         massfrac[N2_ID] = 0.0;
         massfrac[H_ID] = 0.0;
         massfrac[O2_ID] = 0.0;
         massfrac[O_ID] = 0.0;
         massfrac[OH_ID] = 0.0;
         massfrac[H2_ID] = 0.0;
+        //massfrac[H2O_ID] = 0.2549;
         massfrac[H2O_ID] = 1.0;
         massfrac[HO2_ID] =  0.0;
         massfrac[H2O2_ID] = 0.0;
@@ -106,15 +108,15 @@ pc_initdata(
         eos.PYT2R(pressure, massfrac, temperature, rho);
         eos.RTY2E(rho, temperature, massfrac, eint);
       }
-      else if (xval <= 10 && yval <= 1.5) {
+      else if (xval <= 8 && yval <= 1.2) {
         // Unburned stoichiometric
         if (prob_parm.equiv_ratio == 1.0) {
-          massfrac[N2_ID] = 0.0;
+          massfrac[N2_ID] = 0.7451;
           massfrac[H_ID] = 0.0;
-          massfrac[O2_ID] = 0.88809;
+          massfrac[O2_ID] = 0.2264;
           massfrac[O_ID] = 0.0;
           massfrac[OH_ID] = 0.0;
-          massfrac[H2_ID] = 0.1119;
+          massfrac[H2_ID] = 0.0285;
           massfrac[H2O_ID] = 0.0;
           massfrac[HO2_ID] =  0.0;
           massfrac[H2O2_ID] = 0.0;
@@ -230,8 +232,10 @@ bcnormal(
           else if (p_int>p_cr){
               p_ext = p_int;
               s_ext[UTEMP] = inj_t0 * pow((p_ext / inj_p0),(gamma-1)/gamma);
-              massfrac_ext[O2_ID] = 0.88809;
-              massfrac_ext[H2_ID] = 0.1119;
+              massfrac_ext[N2_ID] = 0.7451;
+              massfrac_ext[O2_ID] = 0.2264;
+              massfrac_ext[H2_ID] = 0.0285;
+          amrex::Real sum = 0.0;
               //eos.PYT2RE(prob_parm.reac_pres, massfrac_ext, s_ext[UTEMP], rho, eint);
               eos.PYT2RE(p_ext, massfrac_ext, s_ext[UTEMP], rho, eint);
               for (int n = 0; n < NUM_SPECIES; n++) {
@@ -248,8 +252,9 @@ bcnormal(
            else {
               p_ext = p_cr;
               s_ext[UTEMP] = inj_t0 * (2/(gamma+1));
-              massfrac_ext[O2_ID] = 0.88809;
-              massfrac_ext[H2_ID] = 0.1119;
+              massfrac_ext[N2_ID] = 0.7451;
+              massfrac_ext[O2_ID] = 0.2264;
+              massfrac_ext[H2_ID] = 0.0285;
               eos.PYT2RE(p_ext, massfrac_ext, s_ext[UTEMP], rho, eint);
               for (int n = 0; n < NUM_SPECIES; n++) {
                 s_ext[UFS + n] = rho * massfrac_ext[n];
@@ -274,27 +279,33 @@ bcnormal(
       amrex::Real p_int;
       amrex::Real massfrac_int[NUM_SPECIES] = {0.0};
       amrex::Real massfrac_ext[NUM_SPECIES] = {0.0};
-      amrex::Real gamma = 1.4;
       // we assume pressure on the outer boundary is equal to the reactant pressure (1 atm)
-      amrex::Real p_ext = prob_parm.reac_pres;
+      amrex::Real p_ext = prob_parm.p_outlet;
       amrex::Real c0;
-      eos.RTY2Cs(s_int[URHO], s_int[UTEMP], massfrac_int, c0);
       // initialize mass fractions
       for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac_int[n] = s_int[UFS + n] / s_int[URHO];
       }
+      eos.RTY2Cs(s_int[URHO], s_int[UTEMP], massfrac_int, c0);
       for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac_ext[n] = massfrac_int[n];
       }
       if (s_int[UMY]/s_int[URHO] < c0) {
+        amrex::Real Cp = 0;
+        amrex::Real Cv = 0;
+        amrex::Real gamma = 0;
+        eos.TY2Cp(s_int[UTEMP],massfrac_int,Cp);
+        eos.TY2Cv(s_int[UTEMP],massfrac_int,Cv);
+        gamma = Cp/Cv;
         // calculate pressure on the inside from known values
         eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
         
         // calculate stagnation speed of sound, density, and temperature
-        amrex::Real R = p_int/(s_int[URHO]*s_int[UTEMP]); // probably can get this in input but idk how (gas constant)
-        amrex::Real vel =  sqrt(s_int[UEDEN]/(0.5 * s_int[URHO])); // find the overall velocity
-        amrex::Real T0 = s_int[UTEMP]*(1 + (vel*vel) / (2*s_int[UTEMP]*((gamma*R)/(gamma-1)))); 
-        amrex::Real rho0 = s_int[URHO]* (pow((1 + ((gamma-1)/2))*pow(vel/sqrt(gamma*R*s_int[UTEMP]),2),1/(gamma-1)));
+        amrex::Real R = p_int/(s_int[URHO]*s_int[UTEMP]); // probably can get this in input but idk how (gas constant) assumes gas constant...
+        amrex::Real vel = sqrt((s_int[UEDEN] - s_int[UEINT])/(0.5 * s_int[URHO])); // find the overall velocity
+        //amrex::Real vel = s_int[UMY]/s_int[URHO] // this is just y velocity
+        amrex::Real mach = vel / c0;
+        amrex::Real rho0 = s_int[URHO]* (pow((1 + ((gamma-1)/2)*pow(mach,2)),1/(gamma-1)));
         amrex::Real rho, eint;
         // interpolate value for rho
         rho = s_int[URHO] + (p_ext - p_int)/c0;
