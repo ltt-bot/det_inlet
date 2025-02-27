@@ -66,12 +66,12 @@ amr.max_level       = 0       # maximum level number allowed
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
-amr.check_file      = /home/ltt/Output/Ign_Inlet/det_outlet_chk      # root name of checkpoint file
+amr.check_file      = /home/ltt/Output/Ign_Inlet/noamr_outlet_chk_newr      # root name of checkpoint file
 amr.check_int       = 1000        # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
-amr.plot_file       = /home/ltt/Output/Ign_Inlet/det_outlet       # root name of plotfile
+amr.plot_file       = /home/ltt/Output/Ign_Inlet/noamr_outlet_newr      # root name of plotfile
 amr.plot_int        = 200        # number of timesteps between plotfiles
 amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure eint

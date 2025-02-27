@@ -301,7 +301,8 @@ bcnormal(
         eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
         
         // calculate stagnation speed of sound, density, and temperature
-        amrex::Real R = p_int/(s_int[URHO]*s_int[UTEMP]); // probably can get this in input but idk how (gas constant) assumes gas constant...
+        //amrex::Real R = p_int/(s_int[URHO]*s_int[UTEMP]); // probably can get this in input but idk how (gas constant) assumes gas constant...
+        amrex::Real R = Cp - Cv;
         amrex::Real vel = sqrt((s_int[UEDEN] - s_int[UEINT])/(0.5 * s_int[URHO])); // find the overall velocity
         //amrex::Real vel = s_int[UMY]/s_int[URHO] // this is just y velocity
         amrex::Real mach = vel / c0;
