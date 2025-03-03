@@ -1,7 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
-# stop_time = -1        # simulation time (seconds)
+stop_time = 0.0015       # simulation time (seconds)
 # max_step = -1         # number of coarse steps after which to stop
-max_wall_time = 0.1       # wall clock time (hours)
+max_wall_time = 5       # wall clock time (hours)
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0 0  # For each dir, 0: non-periodic, 1: periodic
@@ -14,8 +14,8 @@ geometry.prob_hi     =  15.  5.   2.5
 #amr.n_cell          =  256 64 32
 #amr.n_cell          =  512 128 64
 #amr.n_cell          =  1024 32 32
-#amr.n_cell           =  600 200 200
-amr.n_cell           = 300 100 100
+amr.n_cell           =  600 200 200
+#amr.n_cell           = 300 100 100
 amr.blocking_factor  =  2
 
 # >>>>>>>>>>>>>  BC KEYWORDS <<<<<<<<<<<<<<<<<<<<<<
@@ -66,13 +66,13 @@ amr.max_level       = 0       # maximum level number allowed
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
-amr.check_file      = /home/ltt/Output/Ign_Inlet/noamr_outlet_chk_newr      # root name of checkpoint file
-amr.check_int       = 1000        # number of timesteps between checkpoints
+amr.check_file      = /projects/MUELLER/ltt/Output/det_outflow_noamr/noamr_outlet_chk      # root name of checkpoint file
+amr.check_int       = 2000        # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
-amr.plot_file       = /home/ltt/Output/Ign_Inlet/noamr_outlet_newr      # root name of plotfile
-amr.plot_int        = 200        # number of timesteps between plotfiles
+amr.plot_file       = /projects/MUELLER/ltt/Output/det_outflow_noamr/noamr_outlet      # root name of plotfile
+amr.plot_int        = 400        # number of timesteps between plotfiles
 amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure eint
 pelec.plot_rhoy = 0

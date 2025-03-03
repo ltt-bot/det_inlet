@@ -290,7 +290,8 @@ bcnormal(
       for (int n = 0; n < NUM_SPECIES; n++) {
         massfrac_ext[n] = massfrac_int[n];
       }
-      if (s_int[UMY]/s_int[URHO] < c0) {
+      amrex::Real vel = sqrt((s_int[UEDEN] - s_int[UEINT])/(0.5 * s_int[URHO])); // find the overall velocity
+      if (vel < c0) {
         amrex::Real Cp = 0;
         amrex::Real Cv = 0;
         amrex::Real gamma = 0;
@@ -301,10 +302,7 @@ bcnormal(
         eos.RTY2P(s_int[URHO], s_int[UTEMP], massfrac_int, p_int);
         
         // calculate stagnation speed of sound, density, and temperature
-        //amrex::Real R = p_int/(s_int[URHO]*s_int[UTEMP]); // probably can get this in input but idk how (gas constant) assumes gas constant...
         amrex::Real R = Cp - Cv;
-        amrex::Real vel = sqrt((s_int[UEDEN] - s_int[UEINT])/(0.5 * s_int[URHO])); // find the overall velocity
-        //amrex::Real vel = s_int[UMY]/s_int[URHO] // this is just y velocity
         amrex::Real mach = vel / c0;
         amrex::Real rho0 = s_int[URHO]* (pow((1 + ((gamma-1)/2)*pow(mach,2)),1/(gamma-1)));
         amrex::Real rho, eint;
@@ -321,9 +319,9 @@ bcnormal(
         s_ext[UEINT] = rho * eint;
 
         // interpolate values for the velocities
-        s_ext[UMX] = rho * (s_int[UMX]/ s_int[URHO] + sgn*(p_int - p_ext)/(rho0*c0));
+        s_ext[UMX] = rho * (s_int[UMX]/ s_int[URHO] + 0 * (p_int - p_ext)/(rho0*c0));
         s_ext[UMY] = rho * (s_int[UMY]/ s_int[URHO] + (p_int - p_ext)/(rho0*c0));
-        s_ext[UMZ] = rho * (s_int[UMZ]/ s_int[URHO] + (p_int - p_ext)/(rho0*c0));
+        s_ext[UMZ] = rho * (s_int[UMZ]/ s_int[URHO] + 0 * (p_int - p_ext)/(rho0*c0));
         s_ext[UEDEN] =
         s_ext[UEINT] +
             0.5 * rho * ((s_ext[UMX]/rho) * (s_ext[UMX]/rho) + (s_ext[UMY]/rho) * (s_ext[UMY]/rho) + (s_ext[UMZ]/rho) * (s_ext[UMZ]/rho));
