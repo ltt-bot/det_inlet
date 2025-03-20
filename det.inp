@@ -1,7 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 0.0015       # simulation time (seconds)
 # max_step = -1         # number of coarse steps after which to stop
-max_wall_time = 5       # wall clock time (hours)
+max_wall_time = 12       # wall clock time (hours)
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0 0  # For each dir, 0: non-periodic, 1: periodic
@@ -50,14 +50,14 @@ amr.v                = 1       # verbosity in Amr.cpp
 #amr.grid_log        = grdlog  # name of grid logging file
 
 # REFINEMENT / REGRIDDING
-#amr.max_level       = 2       # maximum level number allowed
-#amr.ref_ratio       = 2 2 2 2 # refinement ratio
-#amr.regrid_int      = 10       # how often to regrid
-#amr.blocking_factor = 8       # block factor in grid generation
-#amr.max_grid_size   = 8
-#amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
+amr.max_level       = 2       # maximum level number allowed
+amr.ref_ratio       = 2 2 2 2 # refinement ratio
+amr.regrid_int      = 10       # how often to regrid
+amr.blocking_factor = 2       # block factor in grid generation
+amr.max_grid_size   = 8
+amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
-amr.max_level       = 0       # maximum level number allowed
+#amr.max_level       = 0       # maximum level number allowed
 #amr.ref_ratio       = 2 2 2 2 # refinement ratio
 #amr.regrid_int      = 2   # how often to regrid
 #amr.blocking_factor = 8       # block factor in grid generation
@@ -66,12 +66,12 @@ amr.max_level       = 0       # maximum level number allowed
 
 # CHECKPOINT FILES
 amr.checkpoint_files_output = 0
-amr.check_file      = /projects/MUELLER/ltt/Output/det_outflow_noamr/noamr_outlet_chk      # root name of checkpoint file
+amr.check_file      = ../../../../../scratch/gpfs/MUELLER/ltt/Hydrogen/amr/chk/chk_h2_amr      # root name of checkpoint file
 amr.check_int       = 2000        # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
-amr.plot_file       = /projects/MUELLER/ltt/Output/det_outflow_noamr/noamr_outlet      # root name of plotfile
+amr.plot_file       = ../../../../../scratch/gpfs/MUELLER/ltt/Hydrogen/amr/plt/plt_h2_amr     # root name of plotfile
 amr.plot_int        = 400        # number of timesteps between plotfiles
 amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure eint

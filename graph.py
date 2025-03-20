@@ -42,7 +42,7 @@ npts_np = np.array(npts)
 # fields_load=["vfrac","density","pressure", "Temp", "x_velocity", "y_velocity", "z_velocity"]
 # fields_load=["density","pressure", "Temp", "x_velocity", "y_velocity", "z_velocity",
 #     "Y(N2)", "Y(H2)", "Y(H)", "Y(O)", "Y(O2)", "Y(H2O)", "Y(HO2)", "Y(H2O2)"]
-fields_load=["density","pressure", "Temp", "x_velocity", "y_velocity", "z_velocity"]
+fields_load=["density","pressure", "Temp", "x_velocity", "y_velocity", "z_velocity","Y(H2O)"]
 
 # Get the values on the grid at level 0 (finest level)
 first = f_1600.covering_grid(level=max_level, left_edge=lo, dims=npts, fields=fields_load)
@@ -50,6 +50,7 @@ second = f_1800.covering_grid(level=max_level, left_edge=lo, dims=npts, fields=f
 # ad_286092 = ds_286092.covering_grid(level=0, left_edge=lo, dims=npts, fields=fields_load)
 # ad_286093 = ds_286093.covering_grid(level=0, left_edge=lo, dims=npts, fields=fields_load)
 pres_1600    = np.array(first["pressure"])
+yh20         = np.array(first["Y(H2O)"])
 pres_1800    = np.array(second["pressure"])
 
 
@@ -63,20 +64,38 @@ time_plt1600 = 1.4082348244298878e-05
 time_plt1800 = 1.6181010364360225e-05
 dt = time_plt1800 - time_plt1600
 
-max_index1 = np.argmax(pres_1600[:,:,0])
-max_index2 = np.argmax(pres_1800[:,:,0])
+check = pres_1600[:,:,0]
+check2 = pres_1800[:,:,0]
+max_index1 = np.unravel_index(np.argmax(check), check.shape)
+max_index2 = np.unravel_index(np.argmax(check2), check2.shape)
 
-print(pres_1600[:,:,0].shape)
+speed = ((max_index2[0] - max_index1[0]) * dxmin) / (time_plt1800 - time_plt1600)
+
+print(speed)
 
 pressure = pres_1600[:,:,0]
+pressure_2 = pres_1800[:,:,0]
 
-x_y = np.meshgrid(x_arr,y_arr)
 contour = plt.contourf(x_arr,y_arr, pressure.transpose(), levels = 100, cmap="jet")
 
 plt.colorbar(contour)
 
 plt.savefig(f"pressure_1600.png")
 plt.close()
+
+contour = plt.contourf(x_arr,y_arr, pressure_2.transpose(), levels = 100, cmap="jet")
+
+plt.colorbar(contour)
+
+plt.savefig(f"pressure_1800.png")
+plt.close()
+
+#plt.plot(yh20[35,:,0].transpose(),pres_1600[35,:,0].transpose())
+plt.plot(y_arr, pres_1600[35,:,0].transpose())
+plt.savefig(f"yh20vpres_1600.png")
+plt.close()
+
+
 
 
 # ax.set_ylabel('Enthalpy on grid points')

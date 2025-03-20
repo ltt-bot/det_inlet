@@ -271,8 +271,8 @@ bcnormal(
      }
   }
 
-  // outlet boundary condition
- if (idir == 1) {
+// outlet boundary condition
+if (idir == 1) {
   // at y high boundary
     if ( sgn== -1) {
       auto eos = pele::physics::PhysicsType::eos();
@@ -305,17 +305,18 @@ bcnormal(
         amrex::Real R = Cp - Cv;
         amrex::Real mach = vel / c0;
         amrex::Real rho0 = s_int[URHO]* (pow((1 + ((gamma-1)/2)*pow(mach,2)),1/(gamma-1)));
-        amrex::Real rho, eint;
+        amrex::Real rho, eint, temp_ext;
         // interpolate value for rho
-        rho = s_int[URHO] + (p_ext - p_int)/c0;
+        rho = s_int[URHO] + (p_ext - p_int)/(c0*c0);
         s_ext[URHO] = rho;
         // set mass fractions equal to inside now we have density
         for (int n = 0; n < NUM_SPECIES; n++) {
             s_ext[UFS + n] = rho * massfrac_ext[n];
         }
         // find temperature and energy from our known values
-        eos.RYP2T(rho, massfrac_ext, p_ext, s_ext[UTEMP]);
+        eos.RYP2T(rho, massfrac_ext, p_ext, temp_ext);
         eos.RYP2E(rho, massfrac_ext, p_ext, eint);
+        s_ext[UTEMP] = temp_ext;
         s_ext[UEINT] = rho * eint;
 
         // interpolate values for the velocities
