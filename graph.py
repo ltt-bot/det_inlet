@@ -69,9 +69,9 @@ check2 = pres_1800[:,:,0]
 max_index1 = np.unravel_index(np.argmax(check), check.shape)
 max_index2 = np.unravel_index(np.argmax(check2), check2.shape)
 
-speed = ((max_index2[0] - max_index1[0]) * dxmin) / (time_plt1800 - time_plt1600)
+speed = ((max_index2[0] - max_index1[0]) * dxmin) / (time_plt1800 - time_plt1600) *(10**-2)
 
-print(speed)
+print(speed, " m/s")
 
 pressure = pres_1600[:,:,0]
 pressure_2 = pres_1800[:,:,0]

@@ -1,7 +1,7 @@
 # ------------------  INPUTS TO MAIN PROGRAM  -------------------
 stop_time = 0.0015       # simulation time (seconds)
 # max_step = -1         # number of coarse steps after which to stop
-max_wall_time = 12       # wall clock time (hours)
+max_wall_time = 0.25       # wall clock time (hours)
 
 # PROBLEM SIZE & GEOMETRY
 geometry.is_periodic = 1 0 0  # For each dir, 0: non-periodic, 1: periodic
@@ -32,7 +32,9 @@ pelec.diffuse_spec = 1
 pelec.diffuse_enth = 1
 pelec.do_react = 1
 pelec.do_mol = 1
-pelec.ppm_type = 2
+pelec.ppm_type = 1
+pelec.use_hybrid_weno = true
+pelec.weno_scheme = 1
 pelec.chem_integrator="ReactorCvode"
 cvode.solve_type = "GMRES"
 
@@ -51,28 +53,21 @@ amr.v                = 1       # verbosity in Amr.cpp
 
 # REFINEMENT / REGRIDDING
 amr.max_level       = 2       # maximum level number allowed
-amr.ref_ratio       = 2 2 2 2 # refinement ratio
-amr.regrid_int      = 10       # how often to regrid
-amr.blocking_factor = 2       # block factor in grid generation
-amr.max_grid_size   = 8
-amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
-
-#amr.max_level       = 0       # maximum level number allowed
-#amr.ref_ratio       = 2 2 2 2 # refinement ratio
-#amr.regrid_int      = 2   # how often to regrid
-#amr.blocking_factor = 8       # block factor in grid generation
-#amr.max_grid_size   = 32
+amr.ref_ratio       = 4 4 4 2 # refinement ratio
+amr.regrid_int      = 2 2 2 2       # how often to regrid
+amr.blocking_factor = 4       # block factor in grid generation
+#amr.max_grid_size   = 8 8 8 4
 #amr.n_error_buf     = 2 2 2 2 # number of buffer cells in error est
 
 # CHECKPOINT FILES
-amr.checkpoint_files_output = 0
-amr.check_file      = ../../../../../scratch/gpfs/MUELLER/ltt/Hydrogen/amr/chk/chk_h2_amr      # root name of checkpoint file
-amr.check_int       = 2000        # number of timesteps between checkpoints
+amr.checkpoint_files_output = 1
+amr.check_file      = ../../../../../../scratch/gpfs/MUELLER/ltt/Hydrogen/amr/chk/chk_h2_amr      # root name of checkpoint file
+amr.check_int       = 3000        # number of timesteps between checkpoints
 
 # PLOTFILES
 amr.plot_files_output = 1
-amr.plot_file       = ../../../../../scratch/gpfs/MUELLER/ltt/Hydrogen/amr/plt/plt_h2_amr     # root name of plotfile
-amr.plot_int        = 400        # number of timesteps between plotfiles
+amr.plot_file       = ../../../../../../scratch/gpfs/MUELLER/ltt/Hydrogen/amr/plt/plt_h2_amr     # root name of plotfile
+amr.plot_int        = 1000        # number of timesteps between plotfiles
 amr.plot_vars  =  density Temp
 amr.derive_plot_vars = x_velocity y_velocity z_velocity magvel magvort pressure eint
 pelec.plot_rhoy = 0
@@ -86,11 +81,17 @@ prob.equiv_ratio = 1.0
 #tagging.max_ftracerr_lev = 3
 #tagging.ftracerr = 1.e-6
 
-#tagging.velgrad = 0.01         # gradient of density value
-#tagging.max_velgrad_lev = 3    # maximum level at which to use density for tagging
+#tagging.velgrad = 0.01         # gradient of velocity value
+#tagging.max_velgrad_lev = 2    # maximum level at which to use velocity for tagging
 
-#tagging.tempgrad = 1
-#tagging.max_temprad_lev = 3
+tagging.dengrad = 3e-5         # gradient of density value
+tagging.max_velgrad_lev = 3    # maximum level at which to use density for tagging
+
+tagging.pressgrad = 1.0e4;    # gradient of pressure value
+tagging.max_pressgrad_lev = 3    # maximum level at which to use density for tagging
+
+tagging.tempgrad = 1300
+tagging.max_temprad_lev = 3
 
 #amrex.signal_handling=0
 #amr.fpe_trap_overflow = TRUE
